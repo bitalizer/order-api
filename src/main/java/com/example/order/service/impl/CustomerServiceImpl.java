@@ -3,6 +3,7 @@ package com.example.order.service.impl;
 import com.example.order.domain.dto.request.CustomerRequest;
 import com.example.order.domain.dto.response.CustomerResponse;
 import com.example.order.domain.model.Customer;
+import com.example.order.exception.CustomerNotFoundException;
 import com.example.order.repository.CustomerRepository;
 import com.example.order.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +26,13 @@ public class CustomerServiceImpl implements CustomerService {
 	 * Retrieves a customer by their unique identifier.
 	 * @param customerId The ID of the customer to retrieve.
 	 * @return The customer if found.
-	 * @throws ResponseStatusException with a 404 Not Found status if the customer is not
-	 * found.
+	 * @throws CustomerNotFoundException with a 404 Not Found status if the customer is
+	 * not found.
 	 */
 	public Customer getCustomerById(Long customerId) {
-		return customerRepository.findById(customerId).orElseThrow(() -> {
-			String errorMessage = String.format("Customer with ID '%s' was not found.", customerId);
-			return new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
-		});
+		return customerRepository.findById(customerId)
+			.orElseThrow(() -> new CustomerNotFoundException(
+					String.format("Customer with ID '%s' was not found.", customerId)));
 	}
 
 	@Override

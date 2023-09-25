@@ -3,6 +3,7 @@ package com.example.order.service.impl;
 import com.example.order.domain.dto.request.ProductRequest;
 import com.example.order.domain.dto.response.ProductResponse;
 import com.example.order.domain.model.Product;
+import com.example.order.exception.ProductNotFoundException;
 import com.example.order.repository.ProductRepository;
 import com.example.order.service.ProductService;
 import java.util.HashSet;
@@ -11,11 +12,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.server.ResponseStatusException;
 
 @RequiredArgsConstructor
 @Service
@@ -34,6 +33,13 @@ public class ProductServiceImpl implements ProductService {
 		return mapper.map(savedProduct, ProductResponse.class);
 	}
 
+	/**
+	 * Retrieves a list of products by their IDs.
+	 * @param productIds The set of product IDs to retrieve.
+	 * @return A list of products matching the provided IDs.
+	 * @throws ProductNotFoundException with a 404 Not Found status if any of the
+	 * requested products are not found.
+	 */
 	public List<Product> getProductsById(Set<Long> productIds) {
 		List<Product> products = productRepository.findAllById(productIds);
 
@@ -43,8 +49,8 @@ public class ProductServiceImpl implements ProductService {
 		missingProductIds.removeAll(existingProductIds);
 
 		if (!missingProductIds.isEmpty()) {
-			String errorMessage = String.format("Products with ids '%s' do not exist", missingProductIds);
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
+			throw new ProductNotFoundException(
+					"Some products were not found. Missing product IDs: " + missingProductIds);
 		}
 
 		return products;
