@@ -62,17 +62,33 @@ public class OrderServiceImpl implements OrderService {
 		return filteredOrders.stream().map(order -> mapper.map(order, OrderResponse.class)).toList();
 	}
 
+	/**
+	 * Maps a set of order line requests to a map of product IDs to products.
+	 * @param orderLineRequests The set of order line requests.
+	 * @return A map of product IDs to products.
+	 */
 	private Map<Long, Product> getProductMap(Set<OrderLineRequest> orderLineRequests) {
+		// Extract unique product IDs from the order line requests
 		Set<Long> productIds = orderLineRequests.stream()
 			.map(OrderLineRequest::getProductId)
 			.collect(Collectors.toSet());
 
+		// Retrieve the products associated with the extracted product IDs
 		List<Product> products = productService.getProductsById(productIds);
+
+		// Create a map that associates each product ID with its corresponding product
 		return products.stream().collect(Collectors.toMap(Product::getId, Function.identity()));
 	}
 
-	private OrderLine createOrderLine(OrderLineRequest orderLineRequest, Map<Long, Product> productMap,
-			Order newOrder) {
+	/**
+	 * Creates an order line based on the provided order line request, product map, and
+	 * new order.
+	 * @param orderLineRequest The order line request.
+	 * @param productMap The map of product IDs to products.
+	 * @param order The new order to associate with the order line.
+	 * @return The created order line.
+	 */
+	private OrderLine createOrderLine(OrderLineRequest orderLineRequest, Map<Long, Product> productMap, Order order) {
 
 		Long productId = orderLineRequest.getProductId();
 		Product product = productMap.get(productId);
@@ -80,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
 		OrderLine orderLine = new OrderLine();
 		orderLine.setProduct(product);
 		orderLine.setQuantity(orderLineRequest.getQuantity());
-		orderLine.setOrder(newOrder);
+		orderLine.setOrder(order);
 
 		return orderLine;
 	}
