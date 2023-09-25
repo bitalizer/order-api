@@ -5,6 +5,7 @@ import com.example.order.domain.dto.response.CustomerResponse;
 import com.example.order.domain.model.Customer;
 import com.example.order.repository.CustomerRepository;
 import com.example.order.service.CustomerService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,11 @@ public class CustomerServiceImpl implements CustomerService {
 	private final CustomerRepository customerRepository;
 
 	private final ModelMapper mapper;
+
+	@Override
+	public Optional<Customer> getCustomerById(Long customerId) {
+		return customerRepository.findById(customerId);
+	}
 
 	@Override
 	public CustomerResponse createCustomer(@RequestBody @Validated CustomerRequest customerRequest) {
