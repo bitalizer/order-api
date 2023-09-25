@@ -5,7 +5,6 @@ import com.example.order.domain.dto.response.CustomerResponse;
 import com.example.order.domain.model.Customer;
 import com.example.order.repository.CustomerRepository;
 import com.example.order.service.CustomerService;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -22,9 +21,18 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private final ModelMapper mapper;
 
-	@Override
-	public Optional<Customer> getCustomerById(Long customerId) {
-		return customerRepository.findById(customerId);
+	/**
+	 * Retrieves a customer by their unique identifier.
+	 * @param customerId The ID of the customer to retrieve.
+	 * @return The customer if found.
+	 * @throws ResponseStatusException with a 404 Not Found status if the customer is not
+	 * found.
+	 */
+	public Customer getCustomerById(Long customerId) {
+		return customerRepository.findById(customerId).orElseThrow(() -> {
+			String errorMessage = String.format("Customer with ID '%s' was not found.", customerId);
+			return new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
+		});
 	}
 
 	@Override
