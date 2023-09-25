@@ -10,6 +10,7 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -18,6 +19,7 @@ import lombok.experimental.SuperBuilder;
 public abstract class BaseEntity implements Serializable {
 
 	@Getter
+	@Setter
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(updatable = false, nullable = false)
