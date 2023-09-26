@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1695756896314-6
+      author: bitalizer
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: customer_id
+            baseTableName: orders
+            constraintName: FK_ORDERS_ON_CUSTOMER
+            referencedColumnNames: id
+            referencedTableName: customers

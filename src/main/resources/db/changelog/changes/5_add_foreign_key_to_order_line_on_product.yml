@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1695756896314-8
+      author: bitalizer
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: product_id
+            baseTableName: order_line
+            constraintName: FK_ORDER_LINE_ON_PRODUCT
+            referencedColumnNames: id
+            referencedTableName: products
