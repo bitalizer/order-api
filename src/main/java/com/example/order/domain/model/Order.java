@@ -6,8 +6,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
@@ -15,17 +13,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
+@Getter
+@Setter
 @RequiredArgsConstructor
 @Entity
 @Table(name = "orders")
 public class Order extends BaseEntityAudit {
 
-	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-	private Set<OrderLine> orderLines = new HashSet<>();
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<OrderLine> orderLines;
 
-	@Getter
-	@Setter
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	private Customer customer;
 
 	@Override
@@ -43,25 +41,6 @@ public class Order extends BaseEntityAudit {
 	@Override
 	public int hashCode() {
 		return getClass().hashCode();
-	}
-
-	public Set<OrderLine> getOrderLines() {
-		return Collections.unmodifiableSet(orderLines);
-	}
-
-	public void addOrderLine(Product product, int quantity) {
-		OrderLine orderLine = new OrderLine();
-		orderLine.setProduct(product);
-		orderLine.setQuantity(quantity);
-		orderLine.setOrder(this);
-		orderLines.add(orderLine);
-	}
-
-	public void removeOrderLine(OrderLine orderLine) {
-		orderLines.remove(orderLine);
-		orderLine.setOrder(null);
-		orderLine.setProduct(null);
-		orderLine.setQuantity(0);
 	}
 
 }
