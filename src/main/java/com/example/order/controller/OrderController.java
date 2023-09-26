@@ -1,5 +1,6 @@
 package com.example.order.controller;
 
+import com.example.order.domain.dto.request.OrderLineUpdateRequest;
 import com.example.order.domain.dto.request.OrderRequest;
 import com.example.order.domain.dto.response.OrderResponse;
 import com.example.order.domain.model.Order;
@@ -15,7 +16,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,7 +48,7 @@ public class OrderController {
 			@RequestParam(name = "date_to",
 					required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Optional<LocalDate> dateTo) {
 
-		// @formatter:off
+	// @formatter:off
 		List<Specification<Order>> specifications = Stream
 			.of(
 				productId.map(OrderSpecifications::hasProduct),
@@ -61,6 +64,13 @@ public class OrderController {
 		Specification<Order> spec = specifications.stream().reduce(Specification.where(null), Specification::and);
 
 		return orderService.getFilteredOrders(spec);
+	}
+
+	@PutMapping("/{orderId}/order-lines/{orderLineId}/quantity")
+	public OrderResponse updateOrderLineQuantity(@PathVariable Long orderId, @PathVariable Long orderLineId,
+			@RequestBody @Validated OrderLineUpdateRequest orderLineUpdateRequest) {
+
+		return orderService.updateOrderLineQuantity(orderId, orderLineId, orderLineUpdateRequest.getQuantity());
 	}
 
 }
