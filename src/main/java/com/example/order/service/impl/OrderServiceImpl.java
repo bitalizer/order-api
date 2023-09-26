@@ -7,8 +7,6 @@ import com.example.order.domain.model.Customer;
 import com.example.order.domain.model.Order;
 import com.example.order.domain.model.OrderLine;
 import com.example.order.domain.model.Product;
-import com.example.order.exception.CustomerNotFoundException;
-import com.example.order.exception.OrderLineNotFoundException;
 import com.example.order.repository.OrderRepository;
 import com.example.order.service.CustomerService;
 import com.example.order.service.OrderService;
@@ -37,18 +35,6 @@ public class OrderServiceImpl implements OrderService {
 
 	private final ModelMapper mapper;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public List<OrderResponse> getFilteredOrders(Specification<Order> spec) {
-		List<Order> filteredOrders = orderRepository.findAll(spec);
-		return filteredOrders.stream().map(order -> mapper.map(order, OrderResponse.class)).toList();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public OrderResponse createOrder(OrderRequest orderRequest) {
 
@@ -57,42 +43,23 @@ public class OrderServiceImpl implements OrderService {
 		Order newOrder = new Order();
 
 		Map<Long, Product> productMap = getProductMap(orderRequest.getOrderLines());
-		orderRequest.getOrderLines()
-			.forEach(orderLineRequest -> newOrder.addOrderLine(productMap.get(orderLineRequest.getProductId()),
-					orderLineRequest.getQuantity()));
+		Set<OrderLine> orderLines = orderRequest.getOrderLines()
+			.stream()
+			.map(orderLineRequest -> createOrderLine(orderLineRequest, productMap, newOrder))
+			.collect(Collectors.toUnmodifiableSet());
 
 		newOrder.setCustomer(customer);
+		newOrder.setOrderLines(orderLines);
+
 		Order savedOrder = orderRepository.save(newOrder);
 
 		return mapper.map(savedOrder, OrderResponse.class);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public OrderResponse updateOrderLineQuantity(Long orderId, Long orderLineId, Integer newQuantity) {
-
-		Order order = getOrderById(orderId);
-
-		OrderLine orderLine = order.getOrderLines()
-			.stream()
-			.filter(ol -> ol.getId().equals(orderLineId))
-			.findFirst()
-			.orElseThrow(() -> new OrderLineNotFoundException(
-					String.format("Order Line with id '%d' does not exists", orderLineId)));
-
-		if (newQuantity < 1) {
-			order.removeOrderLine(orderLine);
-		}
-		else {
-			orderLine.setQuantity(newQuantity);
-		}
-
-		orderLine.setQuantity(newQuantity);
-		Order savedOrder = orderRepository.save(order);
-
-		return mapper.map(savedOrder, OrderResponse.class);
+	public List<OrderResponse> getFilteredOrders(Specification<Order> spec) {
+		List<Order> filteredOrders = orderRepository.findAll(spec);
+		return filteredOrders.stream().map(order -> mapper.map(order, OrderResponse.class)).toList();
 	}
 
 	/**
@@ -113,11 +80,25 @@ public class OrderServiceImpl implements OrderService {
 		return products.stream().collect(Collectors.toMap(Product::getId, Function.identity()));
 	}
 
-	private Order getOrderById(Long orderId) {
+	/**
+	 * Creates an order line based on the provided order line request, product map, and
+	 * new order.
+	 * @param orderLineRequest The order line request.
+	 * @param productMap The map of product IDs to products.
+	 * @param order The new order to associate with the order line.
+	 * @return The created order line.
+	 */
+	private OrderLine createOrderLine(OrderLineRequest orderLineRequest, Map<Long, Product> productMap, Order order) {
 
-		return orderRepository.findById(orderId)
-			.orElseThrow(
-					() -> new CustomerNotFoundException(String.format("Order with ID '%s' was not found.", orderId)));
+		Long productId = orderLineRequest.getProductId();
+		Product product = productMap.get(productId);
+
+		OrderLine orderLine = new OrderLine();
+		orderLine.setProduct(product);
+		orderLine.setQuantity(orderLineRequest.getQuantity());
+		orderLine.setOrder(order);
+
+		return orderLine;
 	}
 
 }
