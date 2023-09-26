@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RequiredArgsConstructor
 @Service
@@ -25,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
 	private final ModelMapper mapper;
 
 	@Override
-	public ProductResponse createProduct(@RequestBody @Validated ProductRequest productRequest) {
+	public ProductResponse createProduct(ProductRequest productRequest) {
 
 		Product product = mapper.map(productRequest, Product.class);
 		Product savedProduct = productRepository.save(product);
